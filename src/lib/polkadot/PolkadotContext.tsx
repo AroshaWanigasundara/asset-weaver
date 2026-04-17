@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { web3Accounts, web3Enable } from "@polkadot/extension-dapp";
-import type { InjectedAccountWithMeta } from "@polkadot/extension-dapp/types";
+import type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";
 import { toast } from "sonner";
 
 export type ConnStatus = "idle" | "connecting" | "connected" | "disconnected" | "error";
