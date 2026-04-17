@@ -2,9 +2,9 @@
 type Listener = () => void;
 const listeners = new Set<Listener>();
 
-export function onRefresh(fn: Listener) {
+export function onRefresh(fn: Listener): () => void {
   listeners.add(fn);
-  return () => listeners.delete(fn);
+  return () => { listeners.delete(fn); };
 }
 
 export function fireRefresh() {
