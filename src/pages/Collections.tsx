@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { ExtrinsicForm } from "@/components/ExtrinsicForm";
 import { Field, TxtInput } from "@/components/forms/Field";
@@ -7,13 +7,16 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Info, Search } from "lucide-react";
+import { Info, Search, AlertTriangle, Lock } from "lucide-react";
 import { isValidSs58, shortAddr } from "@/lib/polkadot/utils";
 import { fireRefresh, onRefresh } from "@/lib/polkadot/refreshBus";
 import { usePolkadot } from "@/lib/polkadot/PolkadotContext";
-import { useEffect } from "react";
+import { toast } from "sonner";
 
 export default function Collections() {
+  const [lookupId, setLookupId] = useState("");
+  const [lookupFrozen, setLookupFrozen] = useState<boolean | null>(null);
+
   return (
     <>
       <PageHeader title="Collections" description="Group assets into collections and grant on-chain roles." />
@@ -22,9 +25,100 @@ export default function Collections() {
         <SetRolesForm />
       </div>
       <div className="mt-6">
-        <CollectionLookup />
+        <FreezeCollectionForm lookupId={lookupId} lookupFrozen={lookupFrozen} />
+      </div>
+      <div className="mt-6">
+        <CollectionLookup
+          collectionId={lookupId}
+          setCollectionId={setLookupId}
+          onFrozenChange={setLookupFrozen}
+        />
       </div>
     </>
+  );
+}
+
+function FreezeCollectionForm({ lookupId, lookupFrozen }: { lookupId: string; lookupFrozen: boolean | null }) {
+  const { api } = usePolkadot();
+  const [collectionId, setCollectionId] = useState("");
+  const [confirmed, setConfirmed] = useState(false);
+  const [preCheckErr, setPreCheckErr] = useState<string | null>(null);
+
+  const idValid = /^\d+$/.test(collectionId);
+  const matchesLookup = lookupId && lookupId === collectionId;
+  const alreadyFrozen = matchesLookup && lookupFrozen === true;
+
+  useEffect(() => {
+    setPreCheckErr(null);
+    if (!api || !idValid) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const c = await (api.query as any).assetTokenization.collections(Number(collectionId));
+        if (cancelled) return;
+        if (!c.isSome) {
+          setPreCheckErr(`Collection #${collectionId} does not exist.`);
+        } else {
+          const info = c.unwrap().toJSON();
+          if (info.isFrozen) setPreCheckErr(`Collection #${collectionId} is already frozen.`);
+        }
+      } catch {/* ignore */}
+    })();
+    return () => { cancelled = true; };
+  }, [api, collectionId, idValid]);
+
+  const blocked = !!preCheckErr || alreadyFrozen;
+  const canSubmit = idValid && confirmed && !blocked;
+
+  return (
+    <ExtrinsicForm
+      title="Freeze Collection"
+      description="Permanently lock a collection so no new assets can be minted into it."
+      canSubmit={canSubmit}
+      submitLabel={alreadyFrozen ? "This collection is already frozen" : "Freeze collection"}
+      buildTx={(api) => api.tx.assetTokenization.freezeCollection(Number(collectionId))}
+      onSuccess={() => {
+        toast.success(`Collection #${collectionId} has been frozen`);
+        fireRefresh();
+        setConfirmed(false);
+      }}
+      banner={
+        <div className="space-y-3">
+          <div
+            className="rounded-md p-3 text-sm flex gap-2 items-start"
+            style={{
+              backgroundColor: "rgba(239, 68, 68, 0.1)",
+              border: "2px solid #EF4444",
+              color: "#FCA5A5",
+            }}
+          >
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+            <div>
+              <strong>This action is PERMANENT and IRREVERSIBLE.</strong>{" "}
+              Once frozen, no new assets can be minted into this collection. Existing assets remain transferable unless individually frozen.
+            </div>
+          </div>
+          <Alert className="border-primary/30 bg-primary/5">
+            <Info className="h-4 w-4 text-primary" />
+            <AlertTitle>Permissions</AlertTitle>
+            <AlertDescription className="text-xs">
+              Only the collection owner or an account with the Admin role can freeze a collection.
+            </AlertDescription>
+          </Alert>
+        </div>
+      }
+    >
+      <Field
+        label="Collection ID"
+        error={collectionId && !idValid ? "Must be a non-negative integer" : preCheckErr}
+      >
+        <TxtInput value={collectionId} onChange={setCollectionId} placeholder="0" mono />
+      </Field>
+      <label className="flex items-center gap-2 rounded-md border border-border bg-muted/30 p-3 cursor-pointer">
+        <Checkbox checked={confirmed} onCheckedChange={(c) => setConfirmed(Boolean(c))} />
+        <span className="text-sm">I understand this action cannot be undone</span>
+      </label>
+    </ExtrinsicForm>
   );
 }
 
