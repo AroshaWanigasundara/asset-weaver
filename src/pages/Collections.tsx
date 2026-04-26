@@ -195,9 +195,16 @@ function SetRolesForm() {
   );
 }
 
-function CollectionLookup() {
+function CollectionLookup({
+  collectionId,
+  setCollectionId,
+  onFrozenChange,
+}: {
+  collectionId: string;
+  setCollectionId: (v: string) => void;
+  onFrozenChange: (v: boolean | null) => void;
+}) {
   const { api, blockNumber } = usePolkadot();
-  const [collectionId, setCollectionId] = useState("");
   const [account, setAccount] = useState("");
   const [info, setInfo] = useState<any>(null);
   const [roles, setRoles] = useState<any>(null);
@@ -211,7 +218,9 @@ function CollectionLookup() {
       const id = Number(collectionId);
       const P = (api.query as any).assetTokenization;
       const c = await P.collections(id);
-      setInfo(c.isSome ? c.unwrap().toJSON() : null);
+      const j = c.isSome ? c.unwrap().toJSON() : null;
+      setInfo(j);
+      onFrozenChange(j ? !!j.isFrozen : null);
       if (account && isValidSs58(account)) {
         const r = await P.collectionRoles(id, account);
         setRoles(r.isSome ? r.unwrap().toJSON() : r.toJSON());
@@ -255,11 +264,15 @@ function CollectionLookup() {
             <dl className="grid grid-cols-[100px_1fr] gap-y-1 text-sm">
               <dt className="text-muted-foreground">name</dt><dd className="font-medium">{info.name}</dd>
               <dt className="text-muted-foreground">owner</dt><dd className="font-mono text-xs break-all">{info.owner}</dd>
-              <dt className="text-muted-foreground">frozen</dt>
+              <dt className="text-muted-foreground">status</dt>
               <dd>
-                {info.isFrozen
-                  ? <Badge className="bg-destructive/20 text-destructive border-destructive/40">Frozen</Badge>
-                  : <Badge className="bg-success/20 text-success border-success/40">Active</Badge>}
+                {info.isFrozen ? (
+                  <Badge className="bg-red-500/20 text-red-400 border-red-500 gap-1">
+                    <Lock className="h-3 w-3" /> FROZEN 🔒
+                  </Badge>
+                ) : (
+                  <Badge className="bg-green-500/20 text-green-400 border-green-500">ACTIVE ✓</Badge>
+                )}
               </dd>
             </dl>
           </div>
