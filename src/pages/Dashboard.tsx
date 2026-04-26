@@ -7,13 +7,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { fmtNumber, shortAddr } from "@/lib/polkadot/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Activity } from "lucide-react";
+import { Activity, Lock } from "lucide-react";
 
 interface FeedEvent {
   id: string;
   method: string;
   data: string;
   block: number;
+  rawMethod: string;
+  collectionId?: string;
 }
 
 export default function Dashboard() {
@@ -67,11 +69,18 @@ export default function Dashboard() {
           records.forEach((rec: any, i: number) => {
             const { event } = rec;
             if (event.section === PALLET) {
+              const isFreeze = event.method === "CollectionFrozen";
+              let collectionId: string | undefined;
+              if (isFreeze) {
+                try { collectionId = event.data[0]?.toString(); } catch {}
+              }
               matched.push({
                 id: `${head}-${i}-${event.method}`,
                 method: `${event.section}.${event.method}`,
+                rawMethod: event.method,
                 data: event.data.toString(),
                 block: head,
+                collectionId,
               });
             }
           });
@@ -141,15 +150,35 @@ export default function Dashboard() {
                 </p>
               ) : (
                 <ul className="space-y-2">
-                  {events.map((e) => (
-                    <li key={e.id} className="rounded-md border border-border bg-card/50 p-3">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium text-sm text-primary-glow">{e.method}</span>
-                        <span className="font-mono text-[10px] text-muted-foreground">#{e.block}</span>
-                      </div>
-                      <code className="text-[11px] text-muted-foreground break-all">{e.data}</code>
-                    </li>
-                  ))}
+                  {events.map((e) => {
+                    const isFreeze = e.rawMethod === "CollectionFrozen";
+                    return (
+                      <li
+                        key={e.id}
+                        className={`rounded-md border p-3 ${
+                          isFreeze
+                            ? "border-red-500/60 bg-red-500/5"
+                            : "border-border bg-card/50"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-1 gap-2">
+                          <span className={`font-medium text-sm flex items-center gap-1.5 ${isFreeze ? "text-red-400" : "text-primary-glow"}`}>
+                            {isFreeze && <Lock className="h-3.5 w-3.5" />}
+                            {isFreeze && e.collectionId
+                              ? `Collection #${e.collectionId} Frozen`
+                              : e.method}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            {isFreeze && (
+                              <Badge className="bg-red-500/20 text-red-400 border-red-500 text-[10px]">PERMANENT</Badge>
+                            )}
+                            <span className="font-mono text-[10px] text-muted-foreground">#{e.block}</span>
+                          </div>
+                        </div>
+                        <code className="text-[11px] text-muted-foreground break-all">{e.data}</code>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </ScrollArea>
