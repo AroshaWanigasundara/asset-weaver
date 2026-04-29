@@ -7,9 +7,10 @@ import { toast } from "sonner";
 interface Props {
   value: string;
   onChange: (v: string) => void;
+  disabled?: boolean;
 }
 
-export function HexHashInput({ value, onChange }: Props) {
+export function HexHashInput({ value, onChange, disabled }: Props) {
   const ok = value === "" ? null : isValidHex32(value);
 
   const paste = async () => {
@@ -32,6 +33,7 @@ export function HexHashInput({ value, onChange }: Props) {
           onChange={(e) => onChange(e.target.value)}
           placeholder="0x… (64 hex characters)"
           className="font-mono text-xs pr-9"
+          disabled={disabled}
         />
         {ok !== null && (
           <span className="absolute right-2.5 top-1/2 -translate-y-1/2">
@@ -41,7 +43,7 @@ export function HexHashInput({ value, onChange }: Props) {
           </span>
         )}
       </div>
-      <Button type="button" variant="outline" size="sm" onClick={paste} className="gap-1.5">
+      <Button type="button" variant="outline" size="sm" onClick={paste} className="gap-1.5" disabled={disabled}>
         <Clipboard className="h-3.5 w-3.5" />
         Paste & Validate
       </Button>
