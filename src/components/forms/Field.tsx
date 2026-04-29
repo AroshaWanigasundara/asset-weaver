@@ -31,8 +31,9 @@ interface TxtProps {
   className?: string;
   type?: string;
   maxLength?: number;
+  disabled?: boolean;
 }
-export function TxtInput({ value, onChange, placeholder, mono, className, type = "text", maxLength }: TxtProps) {
+export function TxtInput({ value, onChange, placeholder, mono, className, type = "text", maxLength, disabled }: TxtProps) {
   return (
     <Input
       value={value}
@@ -41,6 +42,7 @@ export function TxtInput({ value, onChange, placeholder, mono, className, type =
       className={cn(mono && "font-mono text-sm", className)}
       type={type}
       maxLength={maxLength}
+      disabled={disabled}
     />
   );
 }
