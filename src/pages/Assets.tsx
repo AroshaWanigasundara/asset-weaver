@@ -5,9 +5,11 @@ import { Field, TxtInput } from "@/components/forms/Field";
 import { HexHashInput } from "@/components/forms/HexHashInput";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "@/components/ui/use-toast";
 import { isValidHex32 } from "@/lib/polkadot/utils";
 import { fireRefresh } from "@/lib/polkadot/refreshBus";
 import { AssetLookup } from "@/components/queries/AssetLookup";
+import { FileUploadField } from "@/components/forms/FileUploadField";
 
 export default function Assets() {
   const [name, setName] = useState("");
@@ -76,13 +78,36 @@ export default function Assets() {
               </SelectContent>
             </Select>
           </Field>
+          <div className="rounded-lg border border-purple-500/30 bg-purple-500/5 p-4">
+            <h4 className="text-sm font-semibold mb-3 text-purple-400">
+              📄 Upload Contract Document
+            </h4>
+            <FileUploadField
+              onUploadComplete={(uri, hash, filename) => {
+                setContractUri(uri);
+                setContractHash(hash);
+                toast({
+                  title: "Auto-filled",
+                  description: `Contract URI and SHA-256 hash populated from ${filename}`
+                });
+              }}
+            />
+            <p className="text-xs text-muted-foreground mt-3">
+              Upload your legal contract (PDF, Word, etc.) to IPFS. The URI and hash will be auto-filled.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <div className="flex-1 border-t border-border" />
+            <span>OR enter manually</span>
+            <div className="flex-1 border-t border-border" />
+          </div>
 
           <Field label={`Contract URI (${uriBytes}/256 bytes)`} error={uriErr} hint="e.g. ipfs://Qm…">
-            <TxtInput value={contractUri} onChange={setContractUri} placeholder="ipfs://Qm..." mono />
+            <TxtInput value={contractUri} onChange={setContractUri} placeholder="ipfs://Qm..." mono disabled />
           </Field>
 
           <Field label="SHA-256 hash of contract" error={hashErr} hint="32 bytes — exactly 64 hex characters">
-            <HexHashInput value={contractHash} onChange={setContractHash} />
+            <HexHashInput value={contractHash} onChange={setContractHash} disabled />
           </Field>
 
           <div className="flex items-center justify-between rounded-md border border-border bg-muted/30 p-3">
