@@ -1,4 +1,4 @@
-import { web3FromAddress } from "@polkadot/extension-dapp";
+import { web3FromAddress, web3Enable } from "@polkadot/extension-dapp";
 import type { ApiPromise } from "@polkadot/api";
 import { toast } from "sonner";
 
@@ -11,6 +11,7 @@ export interface SubmitOpts {
 }
 
 export async function signAndSubmit({ api, address, tx, onStatus, onFinalized }: SubmitOpts) {
+  await web3Enable("Asset Tokenization Console");
   const injector = await web3FromAddress(address);
   return new Promise<void>((resolve, reject) => {
     tx.signAndSend(address, { signer: injector.signer }, ({ status, dispatchError, events }: any) => {
