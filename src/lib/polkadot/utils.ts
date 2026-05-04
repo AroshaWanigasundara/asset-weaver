@@ -31,3 +31,16 @@ export function safeStringify(obj: unknown) {
     2,
   );
 }
+
+export function hexToString(hex?: string | null): string {
+  if (!hex) return "—";
+  try {
+    // Remove 0x prefix if present
+    const cleanHex = hex.startsWith("0x") ? hex.slice(2) : hex;
+    // Convert hex to bytes then to string
+    const bytes = new Uint8Array(cleanHex.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16)));
+    return new TextDecoder().decode(bytes);
+  } catch {
+    return hex; // Fallback to original hex if decoding fails
+  }
+}
