@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { usePolkadot } from "@/lib/polkadot/PolkadotContext";
 import { onRefresh } from "@/lib/polkadot/refreshBus";
-import { fmtNumber, safeStringify, shortAddr } from "@/lib/polkadot/utils";
+import { fmtNumber, safeStringify, shortAddr, hexToString } from "@/lib/polkadot/utils";
 import { Search } from "lucide-react";
 
 export function AssetLookup() {
@@ -79,11 +79,11 @@ export function AssetLookup() {
           {info && (
             <dl className="grid grid-cols-[120px_1fr] gap-y-1.5 text-xs">
               <dt className="text-muted-foreground">name</dt>
-              <dd className="font-medium">{info.name ?? "—"}</dd>
+              <dd className="font-medium">{hexToString(info.name) ?? "—"}</dd>
               <dt className="text-muted-foreground">type</dt>
               <dd>{typeof info.assetType === "object" ? Object.keys(info.assetType)[0] : String(info.assetType)}</dd>
               <dt className="text-muted-foreground">URI</dt>
-              <dd className="font-mono break-all">{info.contractUri}</dd>
+              <dd className="font-mono break-all">{hexToString(info.contractUri)}</dd>
               <dt className="text-muted-foreground">hash</dt>
               <dd className="font-mono break-all">{info.contractHash}</dd>
               <dt className="text-muted-foreground">fungible</dt>
