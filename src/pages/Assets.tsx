@@ -14,11 +14,15 @@ import { FileUploadField } from "@/components/forms/FileUploadField";
 export default function Assets() {
   const [name, setName] = useState("");
   const [assetType, setAssetType] = useState<"Physical" | "Digital">("Digital");
+  const [digitalMode, setDigitalMode] = useState<"upload" | "uri">("upload");
   const [contractUri, setContractUri] = useState("");
   const [contractHash, setContractHash] = useState("");
   const [isFungible, setIsFungible] = useState(false);
   const [supply, setSupply] = useState("");
   const [collectionId, setCollectionId] = useState("");
+
+  // Physical always uses upload; Digital uses user-selected mode
+  const mode: "upload" | "uri" = assetType === "Physical" ? "upload" : digitalMode;
 
   const nameBytes = new TextEncoder().encode(name).length;
   const uriBytes = new TextEncoder().encode(contractUri).length;
@@ -78,36 +82,49 @@ export default function Assets() {
               </SelectContent>
             </Select>
           </Field>
-          <div className="rounded-lg border border-purple-500/30 bg-purple-500/5 p-4">
-            <h4 className="text-sm font-semibold mb-3 text-purple-400">
-              📄 Upload Contract Document
-            </h4>
-            <FileUploadField
-              onUploadComplete={(uri, hash, filename) => {
-                setContractUri(uri);
-                setContractHash(hash);
-                toast({
-                  title: "Auto-filled",
-                  description: `Contract URI and SHA-256 hash populated from ${filename}`
-                });
-              }}
-            />
-            <p className="text-xs text-muted-foreground mt-3">
-              Upload your legal contract (PDF, Word, etc.) to IPFS. The URI and hash will be auto-filled.
-            </p>
-          </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <div className="flex-1 border-t border-border" />
-            <span>OR enter manually</span>
-            <div className="flex-1 border-t border-border" />
-          </div>
+          {assetType === "Digital" && (
+            <Field label="Contract source" hint="Choose how to provide the contract document.">
+              <Select value={digitalMode} onValueChange={(v: any) => {
+                setDigitalMode(v);
+                setContractUri("");
+                setContractHash("");
+              }}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="upload">Upload contract document (IPFS)</SelectItem>
+                  <SelectItem value="uri">Enter contract URI manually</SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
+          )}
 
-          <Field label={`Contract URI (${uriBytes}/256 bytes)`} error={uriErr} hint="e.g. ipfs://Qm…">
-            <TxtInput value={contractUri} onChange={setContractUri} placeholder="ipfs://Qm..." mono disabled />
+          {mode === "upload" && (
+            <div className="rounded-lg border border-purple-500/30 bg-purple-500/5 p-4">
+              <h4 className="text-sm font-semibold mb-3 text-purple-400">
+                📄 Upload Contract Document
+              </h4>
+              <FileUploadField
+                onUploadComplete={(uri, hash, filename) => {
+                  setContractUri(uri);
+                  setContractHash(hash);
+                  toast({
+                    title: "Auto-filled",
+                    description: `Contract URI and SHA-256 hash populated from ${filename}`
+                  });
+                }}
+              />
+              <p className="text-xs text-muted-foreground mt-3">
+                Upload your legal contract (PDF, Word, etc.) to IPFS. The URI and hash will be auto-filled.
+              </p>
+            </div>
+          )}
+
+          <Field label={`Contract URI (${uriBytes}/256 bytes)`} error={uriErr} hint={mode === "uri" ? "Paste your contract URI (e.g. ipfs://Qm…, https://…)" : "e.g. ipfs://Qm…"}>
+            <TxtInput value={contractUri} onChange={setContractUri} placeholder="ipfs://Qm..." mono disabled={mode === "upload"} />
           </Field>
 
           <Field label="SHA-256 hash of contract" error={hashErr} hint="32 bytes — exactly 64 hex characters">
-            <HexHashInput value={contractHash} onChange={setContractHash} disabled />
+            <HexHashInput value={contractHash} onChange={setContractHash} disabled={mode === "upload"} />
           </Field>
 
           <div className="flex items-center justify-between rounded-md border border-border bg-muted/30 p-3">
