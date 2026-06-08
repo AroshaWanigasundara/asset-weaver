@@ -14,11 +14,15 @@ import { FileUploadField } from "@/components/forms/FileUploadField";
 export default function Assets() {
   const [name, setName] = useState("");
   const [assetType, setAssetType] = useState<"Physical" | "Digital">("Digital");
+  const [digitalMode, setDigitalMode] = useState<"upload" | "uri">("upload");
   const [contractUri, setContractUri] = useState("");
   const [contractHash, setContractHash] = useState("");
   const [isFungible, setIsFungible] = useState(false);
   const [supply, setSupply] = useState("");
   const [collectionId, setCollectionId] = useState("");
+
+  // Physical always uses upload; Digital uses user-selected mode
+  const mode: "upload" | "uri" = assetType === "Physical" ? "upload" : digitalMode;
 
   const nameBytes = new TextEncoder().encode(name).length;
   const uriBytes = new TextEncoder().encode(contractUri).length;
