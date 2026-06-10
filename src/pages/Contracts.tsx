@@ -10,6 +10,8 @@ import { Info, History } from "lucide-react";
 import { isValidHex32 } from "@/lib/polkadot/utils";
 import { fireRefresh } from "@/lib/polkadot/refreshBus";
 import { usePolkadot } from "@/lib/polkadot/PolkadotContext";
+import { FileUploadField } from "@/components/forms/FileUploadField";
+import { toast } from "sonner";
 
 export default function Contracts() {
   return (
