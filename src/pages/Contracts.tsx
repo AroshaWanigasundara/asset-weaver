@@ -52,12 +52,12 @@ function UpdateContractForm() {
   const [uri, setUri] = useState("");
   const [hash, setHash] = useState("");
   const uriBytes = new TextEncoder().encode(uri).length;
-  const ok = /^\d+$/.test(assetId) && uri && uriBytes <= 256 && isValidHex32(hash);
+  const ok = /^\d+$/.test(assetId) && !!uri && uriBytes <= 256 && isValidHex32(hash);
 
   return (
     <ExtrinsicForm
       title="Update Contract"
-      description="Replace the active URI/hash. Past versions remain queryable."
+      description="Upload a new contract document — URI and hash are filled automatically."
       canSubmit={!!ok}
       submitLabel="Push update"
       banner={
@@ -70,16 +70,35 @@ function UpdateContractForm() {
         </Alert>
       }
       buildTx={(api) => api.tx.assetTokenization.updateContract(Number(assetId), uri, hash)}
-      onSuccess={() => fireRefresh()}
+      onSuccess={() => { fireRefresh(); setUri(""); setHash(""); }}
     >
       <Field label="Asset ID">
         <TxtInput value={assetId} onChange={setAssetId} placeholder="0" mono />
       </Field>
-      <Field label={`New contract URI (${uriBytes}/256 bytes)`} error={uriBytes > 256 ? "Max 256 bytes" : null}>
-        <TxtInput value={uri} onChange={setUri} placeholder="ipfs://Qm..." mono />
+
+      <div className="rounded-lg border border-purple-500/30 bg-purple-500/5 p-4">
+        <h4 className="text-sm font-semibold mb-3 text-purple-400">
+          📄 Upload New Contract Document
+        </h4>
+        <FileUploadField
+          onUploadComplete={(newUri, newHash, filename) => {
+            setUri(newUri);
+            setHash(newHash);
+            toast.success("Auto-filled", {
+              description: `Contract URI and SHA-256 hash populated from ${filename}`,
+            });
+          }}
+        />
+        <p className="text-xs text-muted-foreground mt-3">
+          Upload your updated legal contract (PDF, Word, etc.) to IPFS. The URI and hash will be auto-filled.
+        </p>
+      </div>
+
+      <Field label={`Contract URI (${uriBytes}/256 bytes)`} hint="Auto-filled from uploaded document">
+        <TxtInput value={uri} onChange={setUri} placeholder="ipfs://Qm..." mono disabled />
       </Field>
-      <Field label="New SHA-256 hash" hint="0x + 64 hex chars">
-        <HexHashInput value={hash} onChange={setHash} />
+      <Field label="SHA-256 hash" hint="Auto-filled from uploaded document">
+        <HexHashInput value={hash} onChange={setHash} disabled />
       </Field>
     </ExtrinsicForm>
   );
