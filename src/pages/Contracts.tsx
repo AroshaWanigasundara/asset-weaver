@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { ExtrinsicForm } from "@/components/ExtrinsicForm";
 import { Field, TxtInput } from "@/components/forms/Field";
@@ -6,12 +6,82 @@ import { HexHashInput } from "@/components/forms/HexHashInput";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Info, History } from "lucide-react";
-import { isValidHex32 } from "@/lib/polkadot/utils";
+import { hexToString, isValidHex32 } from "@/lib/polkadot/utils";
 import { fireRefresh } from "@/lib/polkadot/refreshBus";
 import { usePolkadot } from "@/lib/polkadot/PolkadotContext";
 import { FileUploadField } from "@/components/forms/FileUploadField";
 import { toast } from "sonner";
+
+interface AssetItem {
+  id: number;
+  name: string;
+}
+
+function useAssets() {
+  const { api } = usePolkadot();
+  const [assets, setAssets] = useState<AssetItem[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!api) return;
+    let cancelled = false;
+    setLoading(true);
+    (async () => {
+      try {
+        const P = (api.query as any).assetTokenization;
+        const next = await P.nextAssetId();
+        const count = Number(next.toString());
+        if (count === 0) {
+          if (!cancelled) setAssets([]);
+          return;
+        }
+        const items: AssetItem[] = [];
+        for (let i = 0; i < count; i++) {
+          const raw = await P.assets(i);
+          if (raw.isSome) {
+            const info = raw.unwrap().toJSON();
+            items.push({ id: i, name: hexToString(info.name) });
+          }
+        }
+        if (!cancelled) setAssets(items);
+      } catch (e) {
+        console.error("useAssets", e);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [api]);
+
+  return { assets, loading };
+}
+
+function AssetSelect({
+  value, onChange, label = "Asset",
+}: { value: string; onChange: (v: string) => void; label?: string }) {
+  const { assets, loading } = useAssets();
+  return (
+    <Field
+      label={label}
+      hint={loading ? "Loading assets…" : assets.length === 0 ? "No assets found." : "Select an asset by name."}
+    >
+      <Select value={value} onValueChange={onChange} disabled={loading || assets.length === 0}>
+        <SelectTrigger>
+          <SelectValue placeholder="Select asset" />
+        </SelectTrigger>
+        <SelectContent>
+          {assets.map((a) => (
+            <SelectItem key={a.id} value={String(a.id)}>
+              #{a.id} — {a.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </Field>
+  );
+}
 
 export default function Contracts() {
   return (
@@ -40,9 +110,7 @@ function SignContractForm() {
       buildTx={(api) => api.tx.assetTokenization.signContract(Number(assetId))}
       onSuccess={() => fireRefresh()}
     >
-      <Field label="Asset ID">
-        <TxtInput value={assetId} onChange={setAssetId} placeholder="0" mono />
-      </Field>
+      <AssetSelect value={assetId} onChange={setAssetId} />
     </ExtrinsicForm>
   );
 }
@@ -72,9 +140,7 @@ function UpdateContractForm() {
       buildTx={(api) => api.tx.assetTokenization.updateContract(Number(assetId), uri, hash)}
       onSuccess={() => { fireRefresh(); setUri(""); setHash(""); }}
     >
-      <Field label="Asset ID">
-        <TxtInput value={assetId} onChange={setAssetId} placeholder="0" mono />
-      </Field>
+      <AssetSelect value={assetId} onChange={setAssetId} />
 
       <div className="rounded-lg border border-purple-500/30 bg-purple-500/5 p-4">
         <h4 className="text-sm font-semibold mb-3 text-purple-400">
@@ -146,9 +212,7 @@ function ContractHistoryViewer() {
       <CardContent className="space-y-4">
         <div className="flex gap-2 items-end">
           <div className="flex-1 max-w-xs">
-            <Field label="Asset ID">
-              <TxtInput value={assetId} onChange={setAssetId} placeholder="0" mono />
-            </Field>
+            <AssetSelect value={assetId} onChange={setAssetId} />
           </div>
           <Button onClick={load} disabled={!api || !assetId || loading} className="bg-gradient-primary">
             Load history
