@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { ExtrinsicForm } from "@/components/ExtrinsicForm";
 import { Field, TxtInput } from "@/components/forms/Field";
@@ -6,12 +6,59 @@ import { HexHashInput } from "@/components/forms/HexHashInput";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
-import { isValidHex32 } from "@/lib/polkadot/utils";
+import { hexToString, isValidHex32 } from "@/lib/polkadot/utils";
 import { fireRefresh } from "@/lib/polkadot/refreshBus";
+import { usePolkadot } from "@/lib/polkadot/PolkadotContext";
 import { AssetLookup } from "@/components/queries/AssetLookup";
 import { FileUploadField } from "@/components/forms/FileUploadField";
 
+interface CollectionItem {
+  id: number;
+  name: string;
+  frozen: boolean;
+}
+
+function useCollections() {
+  const { api } = usePolkadot();
+  const [collections, setCollections] = useState<CollectionItem[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!api) return;
+    let cancelled = false;
+    setLoading(true);
+    (async () => {
+      try {
+        const P = (api.query as any).assetTokenization;
+        const next = await P.nextCollectionId();
+        const count = Number(next.toString());
+        if (count === 0) {
+          if (!cancelled) setCollections([]);
+          return;
+        }
+        const items: CollectionItem[] = [];
+        for (let i = 0; i < count; i++) {
+          const raw = await P.collections(i);
+          if (raw.isSome) {
+            const info = raw.unwrap().toJSON();
+            items.push({ id: i, name: hexToString(info.name), frozen: !!info.isFrozen });
+          }
+        }
+        if (!cancelled) setCollections(items);
+      } catch (e) {
+        console.error("useCollections", e);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [api]);
+
+  return { collections, loading };
+}
+
 export default function Assets() {
+  const { collections, loading: collectionsLoading } = useCollections();
   const [name, setName] = useState("");
   const [assetType, setAssetType] = useState<"Physical" | "Digital">("Digital");
   const [digitalMode, setDigitalMode] = useState<"upload" | "uri">("upload");
@@ -31,13 +78,12 @@ export default function Assets() {
   const uriErr = uriBytes > 256 ? "Max 256 bytes" : null;
   const hashErr = contractHash && !isValidHex32(contractHash) ? "Must be 0x + 64 hex chars" : null;
   const supplyErr = isFungible && !/^\d+$/.test(supply) ? "Required positive integer" : null;
-  const colErr = collectionId && !/^\d+$/.test(collectionId) ? "Must be a number" : null;
 
   const canSubmit =
     !!name && !nameErr &&
     !!contractUri && !uriErr &&
     isValidHex32(contractHash) &&
-    !supplyErr && !colErr;
+    !supplyErr;
 
   const reset = () => {
     setName(""); setContractUri(""); setContractHash("");
@@ -141,8 +187,24 @@ export default function Assets() {
             </Field>
           )}
 
-          <Field label="Collection ID (optional)" error={colErr} hint="Leave blank to mint outside any collection.">
-            <TxtInput value={collectionId} onChange={setCollectionId} placeholder="42" mono />
+          <Field label="Collection (optional)" hint={collectionsLoading ? "Loading collections…" : collections.length === 0 ? "No collections found." : "Select an existing collection, or leave blank."}>
+            <Select
+              value={collectionId}
+              onValueChange={setCollectionId}
+              disabled={collectionsLoading || collections.length === 0}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="No collection" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">No collection</SelectItem>
+                {collections.map((col) => (
+                  <SelectItem key={col.id} value={String(col.id)}>
+                    #{col.id} — {col.name}{col.frozen ? " (frozen)" : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </Field>
         </ExtrinsicForm>
 
