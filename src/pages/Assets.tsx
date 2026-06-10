@@ -66,7 +66,7 @@ export default function Assets() {
   const [contractHash, setContractHash] = useState("");
   const [isFungible, setIsFungible] = useState(false);
   const [supply, setSupply] = useState("");
-  const [collectionId, setCollectionId] = useState("");
+  const [collectionId, setCollectionId] = useState("none");
 
   // Physical always uses upload; Digital uses user-selected mode
   const mode: "upload" | "uri" = assetType === "Physical" ? "upload" : digitalMode;
@@ -87,7 +87,7 @@ export default function Assets() {
 
   const reset = () => {
     setName(""); setContractUri(""); setContractHash("");
-    setIsFungible(false); setSupply(""); setCollectionId("");
+    setIsFungible(false); setSupply(""); setCollectionId("none");
   };
 
   return (
@@ -110,7 +110,7 @@ export default function Assets() {
               contractHash,
               isFungible,
               isFungible ? supply : null,
-              collectionId ? Number(collectionId) : null,
+              collectionId !== "none" ? Number(collectionId) : null,
             )
           }
           onSuccess={() => { fireRefresh(); reset(); }}
@@ -197,7 +197,7 @@ export default function Assets() {
                 <SelectValue placeholder="No collection" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No collection</SelectItem>
+                <SelectItem value="none">No collection</SelectItem>
                 {collections.map((col) => (
                   <SelectItem key={col.id} value={String(col.id)}>
                     #{col.id} — {col.name}{col.frozen ? " (frozen)" : ""}
