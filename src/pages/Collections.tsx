@@ -174,9 +174,7 @@ function SetRolesForm() {
       }
       onSuccess={() => fireRefresh()}
     >
-      <Field label="Collection ID">
-        <TxtInput value={collectionId} onChange={setCollectionId} placeholder="0" mono />
-      </Field>
+      <CollectionSelect value={collectionId} onChange={setCollectionId} label="Collection" />
       <Field label="Account (SS58)" error={who && !isValidSs58(who) ? "Invalid SS58 address" : null}>
         <TxtInput value={who} onChange={setWho} placeholder="5G…" mono />
       </Field>
