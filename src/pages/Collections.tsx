@@ -11,6 +11,7 @@ import { Info, Search, AlertTriangle, Lock } from "lucide-react";
 import { isValidSs58, shortAddr } from "@/lib/polkadot/utils";
 import { fireRefresh, onRefresh } from "@/lib/polkadot/refreshBus";
 import { usePolkadot } from "@/lib/polkadot/PolkadotContext";
+import { CollectionSelect } from "@/components/forms/EntitySelect";
 import { toast } from "sonner";
 
 export default function Collections() {
