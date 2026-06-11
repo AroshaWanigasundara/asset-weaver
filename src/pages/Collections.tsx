@@ -259,7 +259,7 @@ function CollectionLookup({
           <div className="rounded-md border border-border bg-card/50 p-4">
             <h4 className="text-xs uppercase text-muted-foreground mb-2">CollectionInfo</h4>
             <dl className="grid grid-cols-[100px_1fr] gap-y-1 text-sm">
-              <dt className="text-muted-foreground">name</dt><dd className="font-medium">{info.name}</dd>
+              <dt className="text-muted-foreground">name</dt><dd className="font-medium">{hexToString(info.name)}</dd>
               <dt className="text-muted-foreground">owner</dt><dd className="font-mono text-xs break-all">{info.owner}</dd>
               <dt className="text-muted-foreground">status</dt>
               <dd>
