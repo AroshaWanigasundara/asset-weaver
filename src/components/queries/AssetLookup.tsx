@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { ResultCard } from "@/components/ResultCard";
-import { Field, TxtInput } from "@/components/forms/Field";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { usePolkadot } from "@/lib/polkadot/PolkadotContext";
 import { onRefresh } from "@/lib/polkadot/refreshBus";
-import { fmtNumber, safeStringify, shortAddr, hexToString } from "@/lib/polkadot/utils";
+import { fmtNumber, shortAddr, hexToString } from "@/lib/polkadot/utils";
+import { AssetSelect } from "@/components/forms/EntitySelect";
 import { Search } from "lucide-react";
 
 export function AssetLookup() {
@@ -66,9 +66,7 @@ export function AssetLookup() {
       <CardContent className="space-y-4">
         <div className="flex gap-2 items-end">
           <div className="flex-1">
-            <Field label="Asset ID">
-              <TxtInput value={assetId} onChange={setAssetId} placeholder="0" mono />
-            </Field>
+            <AssetSelect value={assetId} onChange={setAssetId} label="Asset" />
           </div>
           <Button onClick={fetchAll} disabled={!api || !assetId || loading} className="bg-gradient-primary">
             Query

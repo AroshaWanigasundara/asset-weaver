@@ -8,9 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Info, Search, AlertTriangle, Lock } from "lucide-react";
-import { isValidSs58, shortAddr } from "@/lib/polkadot/utils";
+import { isValidSs58, shortAddr, hexToString } from "@/lib/polkadot/utils";
 import { fireRefresh, onRefresh } from "@/lib/polkadot/refreshBus";
 import { usePolkadot } from "@/lib/polkadot/PolkadotContext";
+import { CollectionSelect } from "@/components/forms/EntitySelect";
 import { toast } from "sonner";
 
 export default function Collections() {
@@ -108,12 +109,12 @@ function FreezeCollectionForm({ lookupId, lookupFrozen }: { lookupId: string; lo
         </div>
       }
     >
-      <Field
-        label="Collection ID"
-        error={collectionId && !idValid ? "Must be a non-negative integer" : preCheckErr}
-      >
-        <TxtInput value={collectionId} onChange={setCollectionId} placeholder="0" mono />
-      </Field>
+      <div>
+        <CollectionSelect value={collectionId} onChange={setCollectionId} label="Collection" />
+        {(collectionId && !idValid) || preCheckErr ? (
+          <p className="text-xs text-destructive mt-1">{collectionId && !idValid ? "Must be a non-negative integer" : preCheckErr}</p>
+        ) : null}
+      </div>
       <label className="flex items-center gap-2 rounded-md border border-border bg-muted/30 p-3 cursor-pointer">
         <Checkbox checked={confirmed} onCheckedChange={(c) => setConfirmed(Boolean(c))} />
         <span className="text-sm">I understand this action cannot be undone</span>
@@ -173,9 +174,7 @@ function SetRolesForm() {
       }
       onSuccess={() => fireRefresh()}
     >
-      <Field label="Collection ID">
-        <TxtInput value={collectionId} onChange={setCollectionId} placeholder="0" mono />
-      </Field>
+      <CollectionSelect value={collectionId} onChange={setCollectionId} label="Collection" />
       <Field label="Account (SS58)" error={who && !isValidSs58(who) ? "Invalid SS58 address" : null}>
         <TxtInput value={who} onChange={setWho} placeholder="5G…" mono />
       </Field>
@@ -246,10 +245,8 @@ function CollectionLookup({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid md:grid-cols-[140px_1fr_auto] gap-2 items-end">
-          <Field label="Collection ID">
-            <TxtInput value={collectionId} onChange={setCollectionId} placeholder="0" mono />
-          </Field>
+        <div className="grid md:grid-cols-[1fr_1fr_auto] gap-2 items-end">
+          <CollectionSelect value={collectionId} onChange={setCollectionId} label="Collection" />
           <Field label="Account for roles (optional)">
             <TxtInput value={account} onChange={setAccount} placeholder="5G…" mono />
           </Field>
@@ -262,7 +259,7 @@ function CollectionLookup({
           <div className="rounded-md border border-border bg-card/50 p-4">
             <h4 className="text-xs uppercase text-muted-foreground mb-2">CollectionInfo</h4>
             <dl className="grid grid-cols-[100px_1fr] gap-y-1 text-sm">
-              <dt className="text-muted-foreground">name</dt><dd className="font-medium">{info.name}</dd>
+              <dt className="text-muted-foreground">name</dt><dd className="font-medium">{hexToString(info.name)}</dd>
               <dt className="text-muted-foreground">owner</dt><dd className="font-mono text-xs break-all">{info.owner}</dd>
               <dt className="text-muted-foreground">status</dt>
               <dd>
