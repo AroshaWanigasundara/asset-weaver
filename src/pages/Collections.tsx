@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Info, Search, AlertTriangle, Lock } from "lucide-react";
-import { isValidSs58, shortAddr } from "@/lib/polkadot/utils";
+import { isValidSs58, shortAddr, hexToString } from "@/lib/polkadot/utils";
 import { fireRefresh, onRefresh } from "@/lib/polkadot/refreshBus";
 import { usePolkadot } from "@/lib/polkadot/PolkadotContext";
 import { CollectionSelect } from "@/components/forms/EntitySelect";
