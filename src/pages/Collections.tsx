@@ -109,12 +109,12 @@ function FreezeCollectionForm({ lookupId, lookupFrozen }: { lookupId: string; lo
         </div>
       }
     >
-      <Field
-        label="Collection ID"
-        error={collectionId && !idValid ? "Must be a non-negative integer" : preCheckErr}
-      >
-        <TxtInput value={collectionId} onChange={setCollectionId} placeholder="0" mono />
-      </Field>
+      <div>
+        <CollectionSelect value={collectionId} onChange={setCollectionId} label="Collection" />
+        {(collectionId && !idValid) || preCheckErr ? (
+          <p className="text-xs text-destructive mt-1">{collectionId && !idValid ? "Must be a non-negative integer" : preCheckErr}</p>
+        ) : null}
+      </div>
       <label className="flex items-center gap-2 rounded-md border border-border bg-muted/30 p-3 cursor-pointer">
         <Checkbox checked={confirmed} onCheckedChange={(c) => setConfirmed(Boolean(c))} />
         <span className="text-sm">I understand this action cannot be undone</span>
