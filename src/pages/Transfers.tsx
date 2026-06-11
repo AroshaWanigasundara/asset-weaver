@@ -6,6 +6,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info, AlertTriangle } from "lucide-react";
 import { isValidSs58 } from "@/lib/polkadot/utils";
 import { fireRefresh } from "@/lib/polkadot/refreshBus";
+import { AssetSelect } from "@/components/forms/EntitySelect";
 
 export default function Transfers() {
   return (
@@ -45,9 +46,7 @@ function TransferAssetForm() {
       buildTx={(api) => api.tx.assetTokenization.transferAsset(Number(assetId), to)}
       onSuccess={() => fireRefresh()}
     >
-      <Field label="Asset ID">
-        <TxtInput value={assetId} onChange={setAssetId} placeholder="0" mono />
-      </Field>
+      <AssetSelect value={assetId} onChange={setAssetId} label="Asset" />
       <Field label="Recipient (SS58 address)" error={to && !toOk ? "Invalid SS58 address" : null}>
         <TxtInput value={to} onChange={setTo} placeholder="5G…" mono />
       </Field>
@@ -69,9 +68,7 @@ function TransferFungibleForm() {
       buildTx={(api) => api.tx.assetTokenization.transferFungible(Number(assetId), to, amount)}
       onSuccess={() => fireRefresh()}
     >
-      <Field label="Asset ID">
-        <TxtInput value={assetId} onChange={setAssetId} placeholder="0" mono />
-      </Field>
+      <AssetSelect value={assetId} onChange={setAssetId} label="Asset" />
       <Field label="Recipient (SS58 address)" error={to && !isValidSs58(to) ? "Invalid SS58 address" : null}>
         <TxtInput value={to} onChange={setTo} placeholder="5G…" mono />
       </Field>
@@ -103,9 +100,7 @@ function FreezeAssetForm() {
       buildTx={(api) => api.tx.assetTokenization.freezeAsset(Number(assetId))}
       onSuccess={() => fireRefresh()}
     >
-      <Field label="Asset ID">
-        <TxtInput value={assetId} onChange={setAssetId} placeholder="0" mono />
-      </Field>
+      <AssetSelect value={assetId} onChange={setAssetId} label="Asset" />
     </ExtrinsicForm>
   );
 }
