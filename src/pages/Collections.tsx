@@ -245,10 +245,8 @@ function CollectionLookup({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid md:grid-cols-[140px_1fr_auto] gap-2 items-end">
-          <Field label="Collection ID">
-            <TxtInput value={collectionId} onChange={setCollectionId} placeholder="0" mono />
-          </Field>
+        <div className="grid md:grid-cols-[1fr_1fr_auto] gap-2 items-end">
+          <CollectionSelect value={collectionId} onChange={setCollectionId} label="Collection" />
           <Field label="Account for roles (optional)">
             <TxtInput value={account} onChange={setAccount} placeholder="5G…" mono />
           </Field>
