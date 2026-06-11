@@ -66,9 +66,7 @@ export function AssetLookup() {
       <CardContent className="space-y-4">
         <div className="flex gap-2 items-end">
           <div className="flex-1">
-            <Field label="Asset ID">
-              <TxtInput value={assetId} onChange={setAssetId} placeholder="0" mono />
-            </Field>
+            <AssetSelect value={assetId} onChange={setAssetId} label="Asset" />
           </div>
           <Button onClick={fetchAll} disabled={!api || !assetId || loading} className="bg-gradient-primary">
             Query
