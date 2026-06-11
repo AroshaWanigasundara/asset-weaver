@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { ResultCard } from "@/components/ResultCard";
-import { Field, TxtInput } from "@/components/forms/Field";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { usePolkadot } from "@/lib/polkadot/PolkadotContext";
 import { onRefresh } from "@/lib/polkadot/refreshBus";
-import { fmtNumber, safeStringify, shortAddr, hexToString } from "@/lib/polkadot/utils";
+import { fmtNumber, shortAddr, hexToString } from "@/lib/polkadot/utils";
+import { AssetSelect } from "@/components/forms/EntitySelect";
 import { Search } from "lucide-react";
 
 export function AssetLookup() {
