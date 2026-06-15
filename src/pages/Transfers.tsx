@@ -46,7 +46,7 @@ function TransferAssetForm() {
       buildTx={(api) => api.tx.assetTokenization.transferAsset(Number(assetId), to)}
       onSuccess={() => fireRefresh()}
     >
-      <AssetSelect value={assetId} onChange={setAssetId} label="Asset" />
+      <AssetSelect value={assetId} onChange={setAssetId} label="Asset" fungible={false} />
       <Field label="Recipient (SS58 address)" error={to && !toOk ? "Invalid SS58 address" : null}>
         <TxtInput value={to} onChange={setTo} placeholder="5G…" mono />
       </Field>
