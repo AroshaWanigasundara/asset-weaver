@@ -39,7 +39,7 @@ export function useAssets() {
           const raw = await P.assets(i);
           if (raw.isSome) {
             const info = raw.unwrap().toJSON();
-            items.push({ id: i, name: hexToString(info.name) });
+            items.push({ id: i, name: hexToString(info.name), isFungible: !!info.isFungible });
           }
         }
         if (!cancelled) setAssets(items);
