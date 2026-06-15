@@ -68,7 +68,7 @@ function TransferFungibleForm() {
       buildTx={(api) => api.tx.assetTokenization.transferFungible(Number(assetId), to, amount)}
       onSuccess={() => fireRefresh()}
     >
-      <AssetSelect value={assetId} onChange={setAssetId} label="Asset" />
+      <AssetSelect value={assetId} onChange={setAssetId} label="Asset" fungible={true} />
       <Field label="Recipient (SS58 address)" error={to && !isValidSs58(to) ? "Invalid SS58 address" : null}>
         <TxtInput value={to} onChange={setTo} placeholder="5G…" mono />
       </Field>
