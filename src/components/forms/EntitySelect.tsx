@@ -95,20 +95,23 @@ export function useCollections() {
 }
 
 export function AssetSelect({
-  value, onChange, label = "Asset",
-}: { value: string; onChange: (v: string) => void; label?: string }) {
+  value, onChange, label = "Asset", fungible,
+}: { value: string; onChange: (v: string) => void; label?: string; fungible?: boolean }) {
   const { assets, loading } = useAssets();
+  const filtered = fungible !== undefined
+    ? assets.filter((a) => a.isFungible === fungible)
+    : assets;
   return (
     <Field
       label={label}
-      hint={loading ? "Loading assets…" : assets.length === 0 ? "No assets found." : "Select an asset by name."}
+      hint={loading ? "Loading assets…" : filtered.length === 0 ? "No assets found." : "Select an asset by name."}
     >
-      <Select value={value} onValueChange={onChange} disabled={loading || assets.length === 0}>
+      <Select value={value} onValueChange={onChange} disabled={loading || filtered.length === 0}>
         <SelectTrigger>
           <SelectValue placeholder="Select asset" />
         </SelectTrigger>
         <SelectContent>
-          {assets.map((a) => (
+          {filtered.map((a) => (
             <SelectItem key={a.id} value={String(a.id)}>
               #{a.id} — {a.name}
             </SelectItem>
