@@ -7,6 +7,7 @@ import { hexToString } from "@/lib/polkadot/utils";
 export interface AssetItem {
   id: number;
   name: string;
+  isFungible: boolean;
 }
 
 export interface CollectionItem {
